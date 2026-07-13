@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Generated GraphQL schema
+src/schema.gql
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Test coverage
+coverage/

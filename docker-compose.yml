@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: flowboard_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-flowboard_dev}
+      POSTGRES_USER: ${DB_USER:-flowboard}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-flowboard_secret}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-flowboard} -d ${DB_NAME:-flowboard_dev}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: flowboard_pgadmin
+    restart: unless-stopped
+    depends_on: 
+      postgres:
+        condition: service_healthy
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@flowboard.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin123}
+    ports:
+      - "8888:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: flowboard_app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${PORT:-4000}:4000"
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+    env_file:
+      - .env
+    tty: true
+    stdin_open: true
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+  pgadmin_data:
