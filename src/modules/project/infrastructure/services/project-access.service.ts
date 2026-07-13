@@ -48,6 +48,10 @@ export class ProjectAccessService {
     throw new InsufficientProjectPermissionError();
   }
 
+  async ensureCanManageSections(userId: string, project: Project): Promise<void> {
+    await this.ensureCanManageProject(userId, project);
+  }
+
   async ensureCanDeleteProject(userId: string, project: Project): Promise<void> {
     await this.membershipAccess.ensureAdminOrOwner(userId, project.workspaceId);
   }

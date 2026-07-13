@@ -5,8 +5,13 @@ import {
   PROJECT_MEMBER_REPOSITORY,
 } from '../../domain/contracts/project-member.repository';
 import { IProjectRepository, PROJECT_REPOSITORY } from '../../domain/contracts/project.repository';
+import {
+  IProjectSectionRepository,
+  PROJECT_SECTION_REPOSITORY,
+} from '../../domain/contracts/project-section.repository';
 import { Project } from '../../domain/models/project.model';
 import { ProjectMember } from '../../domain/models/project-member.model';
+import { ProjectSection } from '../../domain/models/project-section.model';
 import { ProjectKeyAlreadyExistsError } from '../../domain/errors/project.errors';
 import { ProjectMemberRole } from '../../domain/value-objects/project-member-role.vo';
 import { ProjectAccessService } from '../../infrastructure/services/project-access.service';
@@ -20,6 +25,8 @@ export class CreateProjectHandler {
     private readonly projectRepository: IProjectRepository,
     @Inject(PROJECT_MEMBER_REPOSITORY)
     private readonly projectMemberRepository: IProjectMemberRepository,
+    @Inject(PROJECT_SECTION_REPOSITORY)
+    private readonly projectSectionRepository: IProjectSectionRepository,
     private readonly projectAccess: ProjectAccessService,
     private readonly eventDispatcher: ProjectDomainEventDispatcherService,
   ) {}
@@ -54,9 +61,19 @@ export class CreateProjectHandler {
       role: ProjectMemberRole.OWNER,
     });
 
+    const defaultSection = ProjectSection.create({
+      workspaceId: project.workspaceId,
+      projectId: project.id,
+      name: 'General',
+      position: 1000,
+      actorUserId,
+    });
+
     await this.projectRepository.save(project);
     await this.projectMemberRepository.save(ownerMember);
+    await this.projectSectionRepository.save(defaultSection);
     this.eventDispatcher.dispatchAggregateEvents(project);
+    this.eventDispatcher.dispatchAggregateEvents(defaultSection);
 
     return project;
   }

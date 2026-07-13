@@ -11,6 +11,7 @@ import {
 } from '../../../domain/contracts/project-user-profile.repository';
 import { Project } from '../../../domain/models/project.model';
 import { ProjectMember } from '../../../domain/models/project-member.model';
+import { ProjectSection } from '../../../domain/models/project-section.model';
 import { CreateProjectHandler } from '../../../features/create-project/create-project.handler';
 import { GetProjectHandler } from '../../../features/get-project/get-project.handler';
 import { ListWorkspaceProjectsHandler } from '../../../features/list-workspace-projects/list-workspace-projects.handler';
@@ -24,16 +25,27 @@ import { ListProjectMembersHandler } from '../../../features/list-project-member
 import { AddProjectMemberHandler } from '../../../features/add-project-member/add-project-member.handler';
 import { RemoveProjectMemberHandler } from '../../../features/remove-project-member/remove-project-member.handler';
 import { TransferProjectOwnershipHandler } from '../../../features/transfer-project-ownership/transfer-project-ownership.handler';
+import { CreateProjectSectionHandler } from '../../../features/create-project-section/create-project-section.handler';
+import { GetProjectSectionHandler } from '../../../features/get-project-section/get-project-section.handler';
+import { ListProjectSectionsHandler } from '../../../features/list-project-sections/list-project-sections.handler';
+import { RenameProjectSectionHandler } from '../../../features/rename-project-section/rename-project-section.handler';
+import { ReorderProjectSectionHandler } from '../../../features/reorder-project-section/reorder-project-section.handler';
+import { DeleteProjectSectionHandler } from '../../../features/delete-project-section/delete-project-section.handler';
+import { RestoreProjectSectionHandler } from '../../../features/restore-project-section/restore-project-section.handler';
 import { AddProjectMemberInput } from '../inputs/add-project-member.input';
 import { CreateProjectInput } from '../inputs/create-project.input';
+import { CreateProjectSectionInput } from '../inputs/create-project-section.input';
 import { ListWorkspaceProjectsInput } from '../inputs/list-workspace-projects.input';
+import { RenameProjectSectionInput } from '../inputs/rename-project-section.input';
 import { RemoveProjectMemberInput } from '../inputs/remove-project-member.input';
+import { ReorderProjectSectionInput } from '../inputs/reorder-project-section.input';
 import { TransferProjectOwnershipInput } from '../inputs/transfer-project-ownership.input';
 import { UpdateProjectDatesInput } from '../inputs/update-project-dates.input';
 import { UpdateProjectDetailsInput } from '../inputs/update-project-details.input';
 import { UpdateProjectHealthInput } from '../inputs/update-project-health.input';
 import { ProjectGqlModel } from '../models/project.model';
 import { ProjectMemberGqlModel, ProjectUserGqlModel } from '../models/project-member.model';
+import { ProjectSectionGqlModel } from '../models/project-section.model';
 
 @Resolver(() => ProjectGqlModel)
 export class ProjectResolver {
@@ -51,6 +63,13 @@ export class ProjectResolver {
     private readonly addProjectMemberHandler: AddProjectMemberHandler,
     private readonly removeProjectMemberHandler: RemoveProjectMemberHandler,
     private readonly transferProjectOwnershipHandler: TransferProjectOwnershipHandler,
+    private readonly createProjectSectionHandler: CreateProjectSectionHandler,
+    private readonly getProjectSectionHandler: GetProjectSectionHandler,
+    private readonly listProjectSectionsHandler: ListProjectSectionsHandler,
+    private readonly renameProjectSectionHandler: RenameProjectSectionHandler,
+    private readonly reorderProjectSectionHandler: ReorderProjectSectionHandler,
+    private readonly deleteProjectSectionHandler: DeleteProjectSectionHandler,
+    private readonly restoreProjectSectionHandler: RestoreProjectSectionHandler,
     @Inject(PROJECT_MEMBER_REPOSITORY)
     private readonly projectMemberRepository: IProjectMemberRepository,
     @Inject(PROJECT_USER_PROFILE_REPOSITORY)
@@ -96,6 +115,24 @@ export class ProjectResolver {
   ): Promise<ProjectMemberGqlModel[]> {
     const members = await this.listProjectMembersHandler.execute(user.id, projectId);
     return this.toMembersGql(members);
+  }
+
+  @Query(() => ProjectSectionGqlModel)
+  async projectSection(
+    @Args('id', { type: () => ID }) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ProjectSectionGqlModel> {
+    const section = await this.getProjectSectionHandler.execute(user.id, id);
+    return this.toSectionGql(section);
+  }
+
+  @Query(() => [ProjectSectionGqlModel])
+  async projectSections(
+    @Args('projectId', { type: () => ID }) projectId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ProjectSectionGqlModel[]> {
+    const sections = await this.listProjectSectionsHandler.execute(user.id, projectId);
+    return sections.map((section) => this.toSectionGql(section));
   }
 
   @Mutation(() => ProjectGqlModel)
@@ -188,6 +225,51 @@ export class ProjectResolver {
     return this.toProjectGql(project, true);
   }
 
+  @Mutation(() => ProjectSectionGqlModel)
+  async createProjectSection(
+    @Args('input') input: CreateProjectSectionInput,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ProjectSectionGqlModel> {
+    const section = await this.createProjectSectionHandler.execute(user.id, input);
+    return this.toSectionGql(section);
+  }
+
+  @Mutation(() => ProjectSectionGqlModel)
+  async renameProjectSection(
+    @Args('input') input: RenameProjectSectionInput,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ProjectSectionGqlModel> {
+    const section = await this.renameProjectSectionHandler.execute(user.id, input);
+    return this.toSectionGql(section);
+  }
+
+  @Mutation(() => ProjectSectionGqlModel)
+  async reorderProjectSection(
+    @Args('input') input: ReorderProjectSectionInput,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ProjectSectionGqlModel> {
+    const section = await this.reorderProjectSectionHandler.execute(user.id, input);
+    return this.toSectionGql(section);
+  }
+
+  @Mutation(() => Boolean)
+  async deleteProjectSection(
+    @Args('sectionId', { type: () => ID }) sectionId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<boolean> {
+    await this.deleteProjectSectionHandler.execute(user.id, sectionId);
+    return true;
+  }
+
+  @Mutation(() => ProjectSectionGqlModel)
+  async restoreProjectSection(
+    @Args('sectionId', { type: () => ID }) sectionId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ProjectSectionGqlModel> {
+    const section = await this.restoreProjectSectionHandler.execute(user.id, sectionId);
+    return this.toSectionGql(section);
+  }
+
   private async toProjectGql(project: Project, includeMembers = false): Promise<ProjectGqlModel> {
     const model = new ProjectGqlModel();
     model.id = project.id;
@@ -237,6 +319,18 @@ export class ProjectResolver {
     model.id = profile.userId;
     model.email = profile.email;
     model.displayName = profile.displayName;
+    return model;
+  }
+
+  private toSectionGql(section: ProjectSection): ProjectSectionGqlModel {
+    const model = new ProjectSectionGqlModel();
+    model.id = section.id;
+    model.workspaceId = section.workspaceId;
+    model.projectId = section.projectId;
+    model.name = section.name;
+    model.position = section.position;
+    model.createdAt = section.createdAt;
+    model.updatedAt = section.updatedAt;
     return model;
   }
 }
