@@ -21,6 +21,14 @@ async function bootstrap(): Promise<void> {
 
   const config = app.get(ConfigService);
   const port = config.get<number>('app.port') ?? 4000;
+  const frontendUrl = config.get<string>('app.frontendUrl') ?? 'http://localhost:3000';
+
+  app.enableCors({
+    origin: [frontendUrl, 'http://localhost:3000', 'http://127.0.0.1:3000'],
+    credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Apollo-Require-Preflight'],
+  });
 
   // Global validation — rejects invalid inputs before they reach application code.
   app.useGlobalPipes(

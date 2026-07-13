@@ -18,6 +18,7 @@ import { JwtAuthGuard } from './modules/identity/infrastructure/auth/jwt-auth.gu
 // --- Domain Modules ---
 import { IdentityModule } from './modules/identity/identity.module';
 import { TaskModule } from './modules/task/task.module';
+import { ProjectModule } from './modules/project/project.module';
 import { WorkspaceModule } from './modules/workspace/workspace.module';
 import { MembershipModule } from './modules/membership/membership.module';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
@@ -72,6 +73,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
     // Domain modules
     IdentityModule,
     TaskModule,
+    ProjectModule,
     WorkspaceModule,
     MembershipModule,
   ],

@@ -1,0 +1,27 @@
+import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import { TaskView } from '../../domain/value-objects/workspace-preferences.vo';
+
+export class UpdateWorkspacePreferencesDto {
+  @IsOptional()
+  @IsEnum(TaskView)
+  defaultTaskView?: TaskView;
+
+  @IsOptional()
+  @IsString()
+  defaultTimezone?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(5000)
+  notificationSettings?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(5000)
+  automationRules?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(5000)
+  customStatuses?: string | null;
+}

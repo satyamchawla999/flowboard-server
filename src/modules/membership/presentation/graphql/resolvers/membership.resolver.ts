@@ -1,7 +1,16 @@
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { CurrentUser, type AuthenticatedUser } from '@common/decorators/current-user.decorator';
-import { MembershipService } from '../../../application/services/membership.service';
+import { InviteWorkspaceMemberHandler } from '../../../features/invite-workspace-member/invite-workspace-member.handler';
+import { AcceptWorkspaceInvitationHandler } from '../../../features/accept-workspace-invitation/accept-workspace-invitation.handler';
+import { RejectWorkspaceInvitationHandler } from '../../../features/reject-workspace-invitation/reject-workspace-invitation.handler';
+import { CancelWorkspaceInvitationHandler } from '../../../features/cancel-workspace-invitation/cancel-workspace-invitation.handler';
+import { ListWorkspaceMembersHandler } from '../../../features/list-workspace-members/list-workspace-members.handler';
+import { ListWorkspaceInvitationsHandler } from '../../../features/list-workspace-invitations/list-workspace-invitations.handler';
+import { ChangeWorkspaceMemberRoleHandler } from '../../../features/change-workspace-member-role/change-workspace-member-role.handler';
+import { RemoveWorkspaceMemberHandler } from '../../../features/remove-workspace-member/remove-workspace-member.handler';
+import { LeaveWorkspaceHandler } from '../../../features/leave-workspace/leave-workspace.handler';
+import { TransferWorkspaceOwnershipHandler } from '../../../features/transfer-workspace-ownership/transfer-workspace-ownership.handler';
 import {
   IMembershipUserProfileRepository,
   MEMBERSHIP_USER_PROFILE_REPOSITORY,
@@ -21,7 +30,16 @@ import { WorkspaceInvitationGqlModel } from '../models/workspace-invitation.mode
 @Resolver(() => WorkspaceMemberGqlModel)
 export class MembershipResolver {
   constructor(
-    private readonly membershipService: MembershipService,
+    private readonly inviteWorkspaceMemberHandler: InviteWorkspaceMemberHandler,
+    private readonly acceptWorkspaceInvitationHandler: AcceptWorkspaceInvitationHandler,
+    private readonly rejectWorkspaceInvitationHandler: RejectWorkspaceInvitationHandler,
+    private readonly cancelWorkspaceInvitationHandler: CancelWorkspaceInvitationHandler,
+    private readonly listWorkspaceMembersHandler: ListWorkspaceMembersHandler,
+    private readonly listWorkspaceInvitationsHandler: ListWorkspaceInvitationsHandler,
+    private readonly changeWorkspaceMemberRoleHandler: ChangeWorkspaceMemberRoleHandler,
+    private readonly removeWorkspaceMemberHandler: RemoveWorkspaceMemberHandler,
+    private readonly leaveWorkspaceHandler: LeaveWorkspaceHandler,
+    private readonly transferWorkspaceOwnershipHandler: TransferWorkspaceOwnershipHandler,
     @Inject(MEMBERSHIP_USER_PROFILE_REPOSITORY)
     private readonly userProfileRepository: IMembershipUserProfileRepository,
   ) {}
@@ -31,7 +49,7 @@ export class MembershipResolver {
     @Args('input') input: InviteWorkspaceMemberInput,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<WorkspaceInvitationGqlModel> {
-    const invitation = await this.membershipService.inviteMember(user.id, {
+    const invitation = await this.inviteWorkspaceMemberHandler.execute(user.id, {
       workspaceId: input.workspaceId,
       email: input.email,
       role: input.role,
@@ -44,7 +62,7 @@ export class MembershipResolver {
     @Args('token') token: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<WorkspaceMemberGqlModel> {
-    const member = await this.membershipService.acceptInvitation(user.id, user.email, token);
+    const member = await this.acceptWorkspaceInvitationHandler.execute(user.id, user.email, token);
     return this.toMemberGql(member);
   }
 
@@ -53,7 +71,7 @@ export class MembershipResolver {
     @Args('token') token: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<WorkspaceInvitationGqlModel> {
-    const invitation = await this.membershipService.rejectInvitation(user.email, token);
+    const invitation = await this.rejectWorkspaceInvitationHandler.execute(user.email, token);
     return this.toInvitationGql(invitation);
   }
 
@@ -62,7 +80,7 @@ export class MembershipResolver {
     @Args('invitationId', { type: () => ID }) invitationId: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<WorkspaceInvitationGqlModel> {
-    const invitation = await this.membershipService.cancelInvitation(user.id, invitationId);
+    const invitation = await this.cancelWorkspaceInvitationHandler.execute(user.id, invitationId);
     return this.toInvitationGql(invitation);
   }
 
@@ -71,7 +89,7 @@ export class MembershipResolver {
     @Args('workspaceId', { type: () => ID }) workspaceId: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<WorkspaceMemberGqlModel[]> {
-    const members = await this.membershipService.listWorkspaceMembers(user.id, workspaceId);
+    const members = await this.listWorkspaceMembersHandler.execute(user.id, workspaceId);
     return Promise.all(members.map((member) => this.toMemberGql(member, true)));
   }
 
@@ -80,7 +98,7 @@ export class MembershipResolver {
     @Args('workspaceId', { type: () => ID }) workspaceId: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<WorkspaceInvitationGqlModel[]> {
-    const invitations = await this.membershipService.listPendingInvitations(user.id, workspaceId);
+    const invitations = await this.listWorkspaceInvitationsHandler.execute(user.id, workspaceId);
     return invitations.map((invitation) => this.toInvitationGql(invitation));
   }
 
@@ -89,7 +107,7 @@ export class MembershipResolver {
     @Args('input') input: ChangeWorkspaceMemberRoleInput,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<WorkspaceMemberGqlModel> {
-    const member = await this.membershipService.changeMemberRole(user.id, {
+    const member = await this.changeWorkspaceMemberRoleHandler.execute(user.id, {
       workspaceId: input.workspaceId,
       userId: input.userId,
       role: input.role,
@@ -102,7 +120,7 @@ export class MembershipResolver {
     @Args('input') input: RemoveWorkspaceMemberInput,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<boolean> {
-    await this.membershipService.removeMember(user.id, {
+    await this.removeWorkspaceMemberHandler.execute(user.id, {
       workspaceId: input.workspaceId,
       userId: input.userId,
     });
@@ -114,7 +132,7 @@ export class MembershipResolver {
     @Args('workspaceId', { type: () => ID }) workspaceId: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<boolean> {
-    await this.membershipService.leaveWorkspace(user.id, workspaceId);
+    await this.leaveWorkspaceHandler.execute(user.id, workspaceId);
     return true;
   }
 
@@ -123,7 +141,7 @@ export class MembershipResolver {
     @Args('input') input: TransferWorkspaceOwnershipInput,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<WorkspaceMemberGqlModel> {
-    const member = await this.membershipService.transferOwnership(user.id, {
+    const member = await this.transferWorkspaceOwnershipHandler.execute(user.id, {
       workspaceId: input.workspaceId,
       targetUserId: input.targetUserId,
     });
