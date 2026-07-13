@@ -5,7 +5,10 @@ import {
 } from '@modules/project/domain/contracts/project.repository';
 import { ProjectNotFoundError } from '@modules/project/domain/errors/project.errors';
 import { ProjectAccessService } from '@modules/project/infrastructure/services/project-access.service';
-import { ITaskRepository, TASK_REPOSITORY } from '@modules/task/domain/contracts/task.repository';
+import {
+  ACTIVITY_TASK_READER,
+  IActivityTaskReader,
+} from '@modules/task/domain/contracts/activity-task-reader.service';
 import { TaskNotFoundError } from '@modules/task/domain/errors/task.errors';
 import {
   ActivityConnectionReadModel,
@@ -16,8 +19,8 @@ import type { ListTaskActivityDto } from './list-task-activity.dto';
 @Injectable()
 export class ListTaskActivityHandler {
   constructor(
-    @Inject(TASK_REPOSITORY)
-    private readonly taskRepository: ITaskRepository,
+    @Inject(ACTIVITY_TASK_READER)
+    private readonly activityTaskReader: IActivityTaskReader,
     @Inject(PROJECT_REPOSITORY)
     private readonly projectRepository: IProjectRepository,
     private readonly projectAccess: ProjectAccessService,
@@ -28,7 +31,7 @@ export class ListTaskActivityHandler {
     actorUserId: string,
     dto: ListTaskActivityDto,
   ): Promise<ActivityConnectionReadModel> {
-    const task = await this.taskRepository.findById(dto.taskId);
+    const task = await this.activityTaskReader.findActiveTaskById(dto.taskId);
     if (!task) throw new TaskNotFoundError(dto.taskId);
     const project = await this.projectRepository.findById(task.projectId);
     if (!project) throw new ProjectNotFoundError(task.projectId);

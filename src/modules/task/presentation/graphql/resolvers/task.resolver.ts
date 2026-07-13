@@ -73,7 +73,8 @@ export class TaskResolver {
 
   @Query(() => [TaskGqlModel])
   async myAssignedTasks(
-    @Args('input', { nullable: true }) input: ListMyAssignedTasksInput | undefined,
+    @Args('input', { type: () => ListMyAssignedTasksInput, nullable: true })
+    input: ListMyAssignedTasksInput | undefined,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<TaskGqlModel[]> {
     const tasks = await this.listMyAssignedTasksHandler.execute(user.id, input ?? {});

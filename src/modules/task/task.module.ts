@@ -1,11 +1,13 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ProjectModule } from '@modules/project/project.module';
+import { ACTIVITY_TASK_READER } from './domain/contracts/activity-task-reader.service';
 import { TASK_REPOSITORY } from './domain/contracts/task.repository';
 import { TASK_SECTION_USAGE_SERVICE } from './domain/contracts/task-section-usage.service';
 import { TaskEntity } from './infrastructure/persistence/mikro-orm/entities/task.entity';
 import { TaskMapper } from './infrastructure/persistence/mikro-orm/mappers/task.mapper';
 import { TaskMikroOrmRepository } from './infrastructure/persistence/mikro-orm/repositories/task.mikro-orm.repository';
+import { ActivityTaskReader } from './infrastructure/services/activity-task-reader.service';
 import { ProjectListViewQueryService } from './infrastructure/services/project-list-view-query.service';
 import { TaskAccessService } from './infrastructure/services/task-access.service';
 import { TaskDomainEventDispatcherService } from './infrastructure/services/task-domain-event-dispatcher.service';
@@ -33,6 +35,7 @@ import { TaskResolver } from './presentation/graphql/resolvers/task.resolver';
   providers: [
     TaskMapper,
     { provide: TASK_REPOSITORY, useClass: TaskMikroOrmRepository },
+    { provide: ACTIVITY_TASK_READER, useClass: ActivityTaskReader },
     { provide: TASK_SECTION_USAGE_SERVICE, useClass: TaskSectionUsageService },
     ProjectListViewQueryService,
     TaskAccessService,
@@ -55,6 +58,6 @@ import { TaskResolver } from './presentation/graphql/resolvers/task.resolver';
     UpdateTaskDetailsHandler,
     TaskResolver,
   ],
-  exports: [TASK_REPOSITORY, TASK_SECTION_USAGE_SERVICE],
+  exports: [ACTIVITY_TASK_READER, TASK_SECTION_USAGE_SERVICE],
 })
 export class TaskModule {}

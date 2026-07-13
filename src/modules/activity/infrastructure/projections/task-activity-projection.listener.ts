@@ -8,7 +8,10 @@ import {
   IProjectUserProfileRepository,
   PROJECT_USER_PROFILE_REPOSITORY,
 } from '@modules/project/domain/contracts/project-user-profile.repository';
-import { ITaskRepository, TASK_REPOSITORY } from '@modules/task/domain/contracts/task.repository';
+import {
+  ACTIVITY_TASK_READER,
+  IActivityTaskReader,
+} from '@modules/task/domain/contracts/activity-task-reader.service';
 import { TaskAssignedEvent } from '@modules/task/domain/events/task-assigned.event';
 import { TaskCompletedEvent } from '@modules/task/domain/events/task-completed.event';
 import { TaskCreatedEvent } from '@modules/task/domain/events/task-created.event';
@@ -28,8 +31,8 @@ import { ActivityAppendService } from '../services/activity-append.service';
 export class TaskActivityProjectionListener {
   constructor(
     private readonly appendService: ActivityAppendService,
-    @Inject(TASK_REPOSITORY)
-    private readonly taskRepository: ITaskRepository,
+    @Inject(ACTIVITY_TASK_READER)
+    private readonly activityTaskReader: IActivityTaskReader,
     @Inject(PROJECT_SECTION_REPOSITORY)
     private readonly sectionRepository: IProjectSectionRepository,
     @Inject(PROJECT_USER_PROFILE_REPOSITORY)
@@ -38,7 +41,7 @@ export class TaskActivityProjectionListener {
 
   @OnEvent(TaskCreatedEvent.EVENT_NAME)
   async onCreated(event: TaskCreatedEvent): Promise<void> {
-    const task = await this.taskRepository.findByIdIncludingDeleted(event.taskId);
+    const task = await this.activityTaskReader.findTaskSnapshotById(event.taskId);
     await this.appendTask(event, ActivityType.TASK_CREATED, event.reporterUserId, {
       taskTitle: task?.title,
       sectionId: event.sectionId,
@@ -54,7 +57,7 @@ export class TaskActivityProjectionListener {
 
   @OnEvent(TaskUpdatedEvent.EVENT_NAME)
   async onUpdated(event: TaskUpdatedEvent): Promise<void> {
-    const task = await this.taskRepository.findByIdIncludingDeleted(event.taskId);
+    const task = await this.activityTaskReader.findTaskSnapshotById(event.taskId);
     await this.appendTask(event, ActivityType.TASK_UPDATED, event.actorUserId, {
       taskTitle: task?.title,
       changedFields: [],
@@ -63,7 +66,7 @@ export class TaskActivityProjectionListener {
 
   @OnEvent(TaskAssignedEvent.EVENT_NAME)
   async onAssigned(event: TaskAssignedEvent): Promise<void> {
-    const task = await this.taskRepository.findByIdIncludingDeleted(event.taskId);
+    const task = await this.activityTaskReader.findTaskSnapshotById(event.taskId);
     await this.appendTask(event, ActivityType.TASK_ASSIGNED, event.actorUserId, {
       taskTitle: task?.title,
       assigneeUserId: event.assigneeUserId,
@@ -73,7 +76,7 @@ export class TaskActivityProjectionListener {
 
   @OnEvent(TaskUnassignedEvent.EVENT_NAME)
   async onUnassigned(event: TaskUnassignedEvent): Promise<void> {
-    const task = await this.taskRepository.findByIdIncludingDeleted(event.taskId);
+    const task = await this.activityTaskReader.findTaskSnapshotById(event.taskId);
     await this.appendTask(event, ActivityType.TASK_UNASSIGNED, event.actorUserId, {
       taskTitle: task?.title,
       previousAssigneeUserId: event.previousAssigneeUserId,
@@ -85,7 +88,7 @@ export class TaskActivityProjectionListener {
 
   @OnEvent(TaskPriorityChangedEvent.EVENT_NAME)
   async onPriorityChanged(event: TaskPriorityChangedEvent): Promise<void> {
-    const task = await this.taskRepository.findByIdIncludingDeleted(event.taskId);
+    const task = await this.activityTaskReader.findTaskSnapshotById(event.taskId);
     await this.appendTask(event, ActivityType.TASK_PRIORITY_CHANGED, event.actorUserId, {
       taskTitle: task?.title,
       previousPriority: event.previousPriority,
@@ -95,7 +98,7 @@ export class TaskActivityProjectionListener {
 
   @OnEvent(TaskDueDateChangedEvent.EVENT_NAME)
   async onDueDateChanged(event: TaskDueDateChangedEvent): Promise<void> {
-    const task = await this.taskRepository.findByIdIncludingDeleted(event.taskId);
+    const task = await this.activityTaskReader.findTaskSnapshotById(event.taskId);
     await this.appendTask(event, ActivityType.TASK_DUE_DATE_CHANGED, event.actorUserId, {
       taskTitle: task?.title,
       previousDueDate: event.previousDueDate?.toISOString() ?? null,
@@ -105,7 +108,7 @@ export class TaskActivityProjectionListener {
 
   @OnEvent(TaskCompletedEvent.EVENT_NAME)
   async onCompleted(event: TaskCompletedEvent): Promise<void> {
-    const task = await this.taskRepository.findByIdIncludingDeleted(event.taskId);
+    const task = await this.activityTaskReader.findTaskSnapshotById(event.taskId);
     await this.appendTask(event, ActivityType.TASK_COMPLETED, event.actorUserId, {
       taskTitle: task?.title,
       completedAt: event.completedAt.toISOString(),
@@ -114,7 +117,7 @@ export class TaskActivityProjectionListener {
 
   @OnEvent(TaskReopenedEvent.EVENT_NAME)
   async onReopened(event: TaskReopenedEvent): Promise<void> {
-    const task = await this.taskRepository.findByIdIncludingDeleted(event.taskId);
+    const task = await this.activityTaskReader.findTaskSnapshotById(event.taskId);
     await this.appendTask(event, ActivityType.TASK_REOPENED, event.actorUserId, {
       taskTitle: task?.title,
     });
@@ -122,7 +125,7 @@ export class TaskActivityProjectionListener {
 
   @OnEvent(TaskMovedEvent.EVENT_NAME)
   async onMoved(event: TaskMovedEvent): Promise<void> {
-    const task = await this.taskRepository.findByIdIncludingDeleted(event.taskId);
+    const task = await this.activityTaskReader.findTaskSnapshotById(event.taskId);
     await this.appendTask(event, ActivityType.TASK_MOVED, event.actorUserId, {
       taskTitle: task?.title,
       fromSectionId: event.fromSectionId,
@@ -136,7 +139,7 @@ export class TaskActivityProjectionListener {
 
   @OnEvent(TaskReorderedEvent.EVENT_NAME)
   async onReordered(event: TaskReorderedEvent): Promise<void> {
-    const task = await this.taskRepository.findByIdIncludingDeleted(event.taskId);
+    const task = await this.activityTaskReader.findTaskSnapshotById(event.taskId);
     await this.appendTask(event, ActivityType.TASK_REORDERED, event.actorUserId, {
       taskTitle: task?.title,
       sectionId: task?.sectionId,
@@ -148,7 +151,7 @@ export class TaskActivityProjectionListener {
 
   @OnEvent(TaskDeletedEvent.EVENT_NAME)
   async onDeleted(event: TaskDeletedEvent): Promise<void> {
-    const task = await this.taskRepository.findByIdIncludingDeleted(event.taskId);
+    const task = await this.activityTaskReader.findTaskSnapshotById(event.taskId);
     await this.appendTask(event, ActivityType.TASK_DELETED, event.actorUserId, {
       taskTitle: task?.title,
       sectionId: task?.sectionId,
@@ -165,7 +168,7 @@ export class TaskActivityProjectionListener {
     actorUserId: string | null,
     metadata: Record<string, unknown>,
   ): Promise<void> {
-    const task = await this.taskRepository.findByIdIncludingDeleted(event.taskId);
+    const task = await this.activityTaskReader.findTaskSnapshotById(event.taskId);
     await this.appendService.append({
       eventName: this.eventName(event, type),
       workspaceId: event.workspaceId,
