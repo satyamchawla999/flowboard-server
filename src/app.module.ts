@@ -13,6 +13,7 @@ import { appConfig, databaseConfig, jwtConfig, mailConfig } from './infrastructu
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { MikroOrmTransactionalAdapter } from './infrastructure/database/mikro-orm-transactional.adapter';
 import { DateTimeScalar } from './common/scalars/date.scalar';
+import { JsonScalar } from './common/scalars/json.scalar';
 import { JwtAuthGuard } from './modules/identity/infrastructure/auth/jwt-auth.guard';
 
 // --- Domain Modules ---
@@ -21,6 +22,7 @@ import { TaskModule } from './modules/task/task.module';
 import { ProjectModule } from './modules/project/project.module';
 import { WorkspaceModule } from './modules/workspace/workspace.module';
 import { MembershipModule } from './modules/membership/membership.module';
+import { ActivityModule } from './modules/activity/activity.module';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 
 @Module({
@@ -76,9 +78,11 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
     ProjectModule,
     WorkspaceModule,
     MembershipModule,
+    ActivityModule,
   ],
   providers: [
     DateTimeScalar,
+    JsonScalar,
     // Global JWT guard — all resolvers require auth unless marked @Public()
     { provide: APP_GUARD, useClass: JwtAuthGuard },
   ],

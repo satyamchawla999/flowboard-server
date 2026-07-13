@@ -55,6 +55,6 @@ import { TaskResolver } from './presentation/graphql/resolvers/task.resolver';
     UpdateTaskDetailsHandler,
     TaskResolver,
   ],
-  exports: [TASK_SECTION_USAGE_SERVICE],
+  exports: [TASK_REPOSITORY, TASK_SECTION_USAGE_SERVICE],
 })
 export class TaskModule {}
