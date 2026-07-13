@@ -1,4 +1,4 @@
-import { ProjectMemberRole } from '../value-objects/project-member-role.vo';
+import type { ProjectMemberRole } from '../value-objects/project-member-role.vo';
 
 export class ProjectMemberRemovedEvent {
   static readonly EVENT_NAME = 'project.member_removed';

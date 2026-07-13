@@ -4,9 +4,10 @@ import { MembershipUserProfile } from '../../../../domain/read-models/membership
 import { MembershipUserProfileEntity } from '../entities/membership-user-profile.entity';
 
 @Injectable()
-export class MembershipUserProfileMapper
-  implements IMapper<MembershipUserProfile, MembershipUserProfileEntity>
-{
+export class MembershipUserProfileMapper implements IMapper<
+  MembershipUserProfile,
+  MembershipUserProfileEntity
+> {
   toDomain(entity: MembershipUserProfileEntity): MembershipUserProfile {
     return MembershipUserProfile.reconstitute({
       userId: entity.userId,

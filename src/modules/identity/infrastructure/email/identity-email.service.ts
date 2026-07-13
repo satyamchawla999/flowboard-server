@@ -139,10 +139,7 @@ export class IdentityEmailService {
   }
 
   private resolveTemplatesDir(): string {
-    const distPath = join(
-      process.cwd(),
-      'dist/modules/identity/infrastructure/email/templates',
-    );
+    const distPath = join(process.cwd(), 'dist/modules/identity/infrastructure/email/templates');
     if (existsSync(distPath)) return distPath;
 
     return join(process.cwd(), 'src/modules/identity/infrastructure/email/templates');

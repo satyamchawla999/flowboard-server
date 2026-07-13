@@ -4,9 +4,10 @@ import { WorkspaceUserProfile } from '../../../../domain/read-models/workspace-u
 import { WorkspaceUserProfileEntity } from '../entities/workspace-user-profile.entity';
 
 @Injectable()
-export class WorkspaceUserProfileMapper
-  implements IMapper<WorkspaceUserProfile, WorkspaceUserProfileEntity>
-{
+export class WorkspaceUserProfileMapper implements IMapper<
+  WorkspaceUserProfile,
+  WorkspaceUserProfileEntity
+> {
   toDomain(entity: WorkspaceUserProfileEntity): WorkspaceUserProfile {
     return WorkspaceUserProfile.reconstitute({
       userId: entity.userId,

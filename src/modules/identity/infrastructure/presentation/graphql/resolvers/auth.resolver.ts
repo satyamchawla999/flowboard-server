@@ -68,9 +68,7 @@ export class AuthResolver {
 
   @Public()
   @Mutation(() => AuthPayloadGqlModel)
-  async refreshToken(
-    @Args('refreshToken') refreshToken: string,
-  ): Promise<AuthPayloadGqlModel> {
+  async refreshToken(@Args('refreshToken') refreshToken: string): Promise<AuthPayloadGqlModel> {
     const result = await this.refreshTokenHandler.execute(refreshToken);
     return this.toGql(result);
   }

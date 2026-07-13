@@ -21,6 +21,13 @@ export class ProjectSectionDeletedError extends DomainError {
   }
 }
 
+export class ProjectSectionHasTasksError extends DomainError {
+  constructor(id: string) {
+    super(`Project section "${id}" still has active tasks`, 'PROJECT_SECTION_HAS_TASKS');
+    this.name = 'ProjectSectionHasTasksError';
+  }
+}
+
 export class InvalidProjectSectionPositionError extends DomainError {
   constructor(message = 'Project section position is invalid') {
     super(message, 'INVALID_PROJECT_SECTION_POSITION');

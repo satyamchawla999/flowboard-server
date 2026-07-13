@@ -1,4 +1,4 @@
-import { WorkspaceMemberRole } from '../../domain/value-objects/workspace-member-role.vo';
+import type { WorkspaceMemberRole } from '../../domain/value-objects/workspace-member-role.vo';
 
 export interface ChangeWorkspaceMemberRoleDto {
   workspaceId: string;

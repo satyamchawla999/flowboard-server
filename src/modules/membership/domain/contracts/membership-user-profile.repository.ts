@@ -8,6 +8,4 @@ export interface IMembershipUserProfileRepository {
   delete(userId: string): Promise<void>;
 }
 
-export const MEMBERSHIP_USER_PROFILE_REPOSITORY = Symbol(
-  'IMembershipUserProfileRepository',
-);
+export const MEMBERSHIP_USER_PROFILE_REPOSITORY = Symbol('IMembershipUserProfileRepository');

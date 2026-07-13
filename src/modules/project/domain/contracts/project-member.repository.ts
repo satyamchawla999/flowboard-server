@@ -1,5 +1,5 @@
 import type { ProjectMember } from '../models/project-member.model';
-import { ProjectMemberRole } from '../value-objects/project-member-role.vo';
+import type { ProjectMemberRole } from '../value-objects/project-member-role.vo';
 
 export interface IProjectMemberRepository {
   findByProjectAndUser(projectId: string, userId: string): Promise<ProjectMember | null>;

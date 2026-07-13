@@ -6,9 +6,7 @@ import { MembershipUserProfileEntity } from '../entities/membership-user-profile
 import { MembershipUserProfileMapper } from '../mappers/membership-user-profile.mapper';
 
 @Injectable()
-export class MembershipUserProfileMikroOrmRepository
-  implements IMembershipUserProfileRepository
-{
+export class MembershipUserProfileMikroOrmRepository implements IMembershipUserProfileRepository {
   constructor(
     private readonly em: EntityManager,
     private readonly mapper: MembershipUserProfileMapper,

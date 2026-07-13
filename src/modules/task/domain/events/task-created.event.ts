@@ -11,8 +11,9 @@ export class TaskCreatedEvent {
 
   constructor(
     public readonly taskId: string,
-    public readonly title: string,
+    public readonly workspaceId: string,
     public readonly projectId: string,
-    public readonly createdById: string,
+    public readonly sectionId: string,
+    public readonly reporterUserId: string,
   ) {}
 }

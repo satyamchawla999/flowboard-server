@@ -1,5 +1,5 @@
 import { BaseDomainModel } from '@common/base';
-import { WorkspaceMemberRole } from '../value-objects/workspace-member-role.vo';
+import type { WorkspaceMemberRole } from '../value-objects/workspace-member-role.vo';
 
 interface CreateWorkspaceMemberProps {
   workspaceId: string;

@@ -8,7 +8,9 @@ export class Migration20260610000000 extends Migration {
     this.addSql(
       `alter table "workspace_user_profiles" add constraint "workspace_user_profiles_email_unique" unique ("email");`,
     );
-    this.addSql(`create index "workspace_user_profiles_email_index" on "workspace_user_profiles" ("email");`);
+    this.addSql(
+      `create index "workspace_user_profiles_email_index" on "workspace_user_profiles" ("email");`,
+    );
     this.addSql(
       `insert into "workspace_user_profiles" ("user_id", "email", "display_name", "account_status", "created_at", "updated_at") select "id", lower("email"), "display_name", "account_status", "created_at", "updated_at" from "users" on conflict ("user_id") do update set "email" = excluded."email", "display_name" = excluded."display_name", "account_status" = excluded."account_status", "updated_at" = excluded."updated_at";`,
     );

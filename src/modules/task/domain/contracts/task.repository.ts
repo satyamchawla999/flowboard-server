@@ -1,16 +1,31 @@
-import type { IBaseRepository } from '@common/base';
+import type { TaskLifecycleStatusValue } from '../value-objects/task-lifecycle-status.vo';
+import type { TaskPriorityLevel } from '../value-objects/task-priority.vo';
 import type { Task } from '../models/task.model';
 
-/**
- * Repository contract defined by the domain — not the infrastructure.
- *
- * Why: This interface expresses what the domain layer needs in its own terms.
- * The implementation (MikroORM) lives in infrastructure and is injected via DI.
- * The domain never knows how persistence works — only that it works.
- */
-export interface ITaskRepository extends IBaseRepository<Task> {
-  findByProjectId(projectId: string): Promise<Task[]>;
-  findByAssigneeId(assigneeId: string): Promise<Task[]>;
+export interface ListProjectTasksFilters {
+  sectionId?: string;
+  assigneeUserId?: string;
+  lifecycleStatus?: TaskLifecycleStatusValue;
+  priority?: TaskPriorityLevel;
+  dueDateFrom?: Date;
+  dueDateTo?: Date;
+}
+
+export interface ListAssignedTasksFilters {
+  workspaceId?: string;
+  lifecycleStatus?: TaskLifecycleStatusValue;
+}
+
+export interface ITaskRepository {
+  findById(id: string): Promise<Task | null>;
+  findByIdIncludingDeleted(id: string): Promise<Task | null>;
+  listByProject(projectId: string, filters?: ListProjectTasksFilters): Promise<Task[]>;
+  listByAssignee(userId: string, filters?: ListAssignedTasksFilters): Promise<Task[]>;
+  listBySection(projectId: string, sectionId: string): Promise<Task[]>;
+  findLastBySection(projectId: string, sectionId: string): Promise<Task | null>;
+  countActiveBySection(sectionId: string): Promise<number>;
+  save(task: Task): Promise<void>;
+  saveMany(tasks: Task[]): Promise<void>;
 }
 
 export const TASK_REPOSITORY = Symbol('ITaskRepository');

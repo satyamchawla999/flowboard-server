@@ -33,9 +33,7 @@ export class MembershipUserProfile {
     });
   }
 
-  static reconstitute(
-    props: ReconstituteMembershipUserProfileProps,
-  ): MembershipUserProfile {
+  static reconstitute(props: ReconstituteMembershipUserProfileProps): MembershipUserProfile {
     return new MembershipUserProfile(props);
   }
 

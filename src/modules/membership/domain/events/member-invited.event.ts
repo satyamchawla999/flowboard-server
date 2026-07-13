@@ -1,4 +1,4 @@
-import { WorkspaceMemberRole } from '../value-objects/workspace-member-role.vo';
+import type { WorkspaceMemberRole } from '../value-objects/workspace-member-role.vo';
 
 export class MemberInvitedEvent {
   static readonly EVENT_NAME = 'membership.member_invited';

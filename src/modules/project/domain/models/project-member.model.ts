@@ -1,5 +1,5 @@
 import { BaseDomainModel } from '@common/base';
-import { ProjectMemberRole } from '../value-objects/project-member-role.vo';
+import type { ProjectMemberRole } from '../value-objects/project-member-role.vo';
 
 interface CreateProjectMemberProps {
   workspaceId: string;

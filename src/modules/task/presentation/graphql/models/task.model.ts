@@ -1,22 +1,37 @@
-import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
+import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { ProjectHealthStatus } from '@modules/project/domain/value-objects/project-health-status.vo';
+import { TaskLifecycleStatusValue } from '../../../domain/value-objects/task-lifecycle-status.vo';
 import { TaskPriorityLevel } from '../../../domain/value-objects/task-priority.vo';
-import { TaskStatusValue } from '../../../domain/value-objects/task-status.vo';
 
 registerEnumType(TaskPriorityLevel, { name: 'TaskPriority' });
-registerEnumType(TaskStatusValue, { name: 'TaskStatus' });
+registerEnumType(TaskLifecycleStatusValue, { name: 'TaskLifecycleStatus' });
+registerEnumType(ProjectHealthStatus, { name: 'TaskListViewProjectHealthStatus' });
 
-/**
- * GraphQL model — a presentation projection of the domain model.
- *
- * Why separate from the domain model: the domain model is optimized for
- * business rules. The GraphQL model is optimized for API consumers.
- * Fields may be renamed, omitted, or shaped differently without touching
- * domain logic. Decoupling these lets both evolve independently.
- */
+@ObjectType('TaskUser')
+export class TaskUserGqlModel {
+  @Field(() => ID)
+  userId!: string;
+
+  @Field()
+  email!: string;
+
+  @Field()
+  displayName!: string;
+}
+
 @ObjectType('Task')
 export class TaskGqlModel {
   @Field(() => ID)
   id!: string;
+
+  @Field(() => ID)
+  workspaceId!: string;
+
+  @Field(() => ID)
+  projectId!: string;
+
+  @Field(() => ID)
+  sectionId!: string;
 
   @Field()
   title!: string;
@@ -24,24 +39,78 @@ export class TaskGqlModel {
   @Field({ nullable: true })
   description?: string;
 
-  @Field(() => ID)
-  projectId!: string;
-
   @Field(() => ID, { nullable: true })
-  assigneeId?: string;
+  assigneeUserId?: string;
 
   @Field(() => ID)
-  createdById!: string;
-
-  @Field(() => TaskStatusValue)
-  status!: TaskStatusValue;
+  reporterUserId!: string;
 
   @Field(() => TaskPriorityLevel)
   priority!: TaskPriorityLevel;
+
+  @Field(() => TaskLifecycleStatusValue)
+  lifecycleStatus!: TaskLifecycleStatusValue;
+
+  @Field({ nullable: true })
+  dueDate?: Date;
+
+  @Field()
+  position!: number;
+
+  @Field({ nullable: true })
+  completedAt?: Date;
 
   @Field()
   createdAt!: Date;
 
   @Field()
   updatedAt!: Date;
+}
+
+@ObjectType('ProjectListViewProject')
+export class ProjectListViewProjectGqlModel {
+  @Field(() => ID)
+  id!: string;
+
+  @Field()
+  name!: string;
+
+  @Field()
+  key!: string;
+
+  @Field(() => ProjectHealthStatus)
+  healthStatus!: ProjectHealthStatus;
+}
+
+@ObjectType('ProjectListViewTask')
+export class ProjectListViewTaskGqlModel extends TaskGqlModel {
+  @Field(() => TaskUserGqlModel, { nullable: true })
+  assignee?: TaskUserGqlModel;
+
+  @Field(() => TaskUserGqlModel, { nullable: true })
+  reporter?: TaskUserGqlModel;
+}
+
+@ObjectType('ProjectListViewSection')
+export class ProjectListViewSectionGqlModel {
+  @Field(() => ID)
+  id!: string;
+
+  @Field()
+  name!: string;
+
+  @Field()
+  position!: number;
+
+  @Field(() => [ProjectListViewTaskGqlModel])
+  tasks!: ProjectListViewTaskGqlModel[];
+}
+
+@ObjectType('ProjectListView')
+export class ProjectListViewGqlModel {
+  @Field(() => ProjectListViewProjectGqlModel)
+  project!: ProjectListViewProjectGqlModel;
+
+  @Field(() => [ProjectListViewSectionGqlModel])
+  sections!: ProjectListViewSectionGqlModel[];
 }

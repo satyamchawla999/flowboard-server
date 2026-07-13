@@ -1,4 +1,4 @@
-import { ProjectHealthStatus } from '../value-objects/project-health-status.vo';
+import type { ProjectHealthStatus } from '../value-objects/project-health-status.vo';
 
 export class ProjectHealthChangedEvent {
   static readonly EVENT_NAME = 'project.health_changed';

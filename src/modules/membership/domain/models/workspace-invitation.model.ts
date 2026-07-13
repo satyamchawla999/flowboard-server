@@ -1,6 +1,6 @@
 import { BaseDomainModel } from '@common/base';
 import { WorkspaceInvitationStatus } from '../value-objects/workspace-invitation-status.vo';
-import { WorkspaceMemberRole } from '../value-objects/workspace-member-role.vo';
+import type { WorkspaceMemberRole } from '../value-objects/workspace-member-role.vo';
 
 interface CreateWorkspaceInvitationProps {
   workspaceId: string;

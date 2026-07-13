@@ -6,9 +6,7 @@ import { WorkspaceUserProfileEntity } from '../entities/workspace-user-profile.e
 import { WorkspaceUserProfileMapper } from '../mappers/workspace-user-profile.mapper';
 
 @Injectable()
-export class WorkspaceUserProfileMikroOrmRepository
-  implements IWorkspaceUserProfileRepository
-{
+export class WorkspaceUserProfileMikroOrmRepository implements IWorkspaceUserProfileRepository {
   constructor(
     private readonly em: EntityManager,
     private readonly mapper: WorkspaceUserProfileMapper,

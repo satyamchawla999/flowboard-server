@@ -1,35 +1,58 @@
-import { Entity, Property, Enum } from '@mikro-orm/core';
+import { Entity, Enum, Index, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@common/base';
+import { TaskLifecycleStatusValue } from '../../../../domain/value-objects/task-lifecycle-status.vo';
 import { TaskPriorityLevel } from '../../../../domain/value-objects/task-priority.vo';
-import { TaskStatusValue } from '../../../../domain/value-objects/task-status.vo';
 
-/**
- * MikroORM entity — a persistence projection of the Task domain model.
- *
- * Why flat enums instead of value objects: MikroORM works with plain values.
- * The mapper converts these back to value objects when constructing the domain
- * model. The entity never contains business logic.
- */
 @Entity({ tableName: 'tasks' })
+@Index({ properties: ['workspaceId'] })
+@Index({ properties: ['projectId'] })
+@Index({ properties: ['sectionId'] })
+@Index({ properties: ['sectionId', 'position'] })
+@Index({ properties: ['assigneeUserId'] })
+@Index({ properties: ['reporterUserId'] })
+@Index({ properties: ['lifecycleStatus'] })
+@Index({ properties: ['dueDate'] })
+@Index({ properties: ['deletedAt'] })
 export class TaskEntity extends BaseEntity {
+  @Property({ type: 'uuid' })
+  workspaceId!: string;
+
+  @Property({ type: 'uuid' })
+  projectId!: string;
+
+  @Property({ type: 'uuid' })
+  sectionId!: string;
+
+  @Property({ type: 'uuid', nullable: true })
+  parentTaskId: string | null = null;
+
   @Property()
   title!: string;
 
   @Property({ nullable: true, type: 'text' })
   description: string | null = null;
 
-  @Property({ type: 'uuid' })
-  projectId!: string;
-
   @Property({ type: 'uuid', nullable: true })
-  assigneeId: string | null = null;
+  assigneeUserId: string | null = null;
 
   @Property({ type: 'uuid' })
-  createdById!: string;
-
-  @Enum({ items: () => TaskStatusValue })
-  status: TaskStatusValue = TaskStatusValue.TODO;
+  reporterUserId!: string;
 
   @Enum({ items: () => TaskPriorityLevel })
-  priority: TaskPriorityLevel = TaskPriorityLevel.MEDIUM;
+  priority: TaskPriorityLevel = TaskPriorityLevel.NONE;
+
+  @Enum({ items: () => TaskLifecycleStatusValue })
+  lifecycleStatus: TaskLifecycleStatusValue = TaskLifecycleStatusValue.OPEN;
+
+  @Property({ nullable: true })
+  dueDate: Date | null = null;
+
+  @Property({ type: 'decimal', precision: 20, scale: 6 })
+  position!: string;
+
+  @Property({ nullable: true })
+  completedAt: Date | null = null;
+
+  @Property({ nullable: true })
+  deletedAt: Date | null = null;
 }

@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { MembershipModule } from '@modules/membership/membership.module';
+import { TaskModule } from '@modules/task/task.module';
 import { ProjectEntity } from './infrastructure/persistence/mikro-orm/entities/project.entity';
 import { ProjectMemberEntity } from './infrastructure/persistence/mikro-orm/entities/project-member.entity';
 import { ProjectSectionEntity } from './infrastructure/persistence/mikro-orm/entities/project-section.entity';
@@ -52,6 +53,7 @@ import { ProjectResolver } from './presentation/graphql/resolvers/project.resolv
       ProjectUserProfileEntity,
     ]),
     MembershipModule,
+    forwardRef(() => TaskModule),
   ],
   providers: [
     ProjectMapper,
@@ -87,6 +89,13 @@ import { ProjectResolver } from './presentation/graphql/resolvers/project.resolv
     DeleteProjectSectionHandler,
     RestoreProjectSectionHandler,
     ProjectResolver,
+  ],
+  exports: [
+    PROJECT_REPOSITORY,
+    PROJECT_MEMBER_REPOSITORY,
+    PROJECT_SECTION_REPOSITORY,
+    PROJECT_USER_PROFILE_REPOSITORY,
+    ProjectAccessService,
   ],
 })
 export class ProjectModule {}

@@ -1,6 +1,7 @@
 import { BaseValueObject } from '@common/base';
 
 export enum TaskPriorityLevel {
+  NONE = 'NONE',
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
@@ -16,6 +17,7 @@ interface TaskPriorityProps {
  * Two MEDIUM priorities are semantically identical regardless of instance.
  */
 export class TaskPriority extends BaseValueObject<TaskPriorityProps> {
+  static readonly NONE = new TaskPriority({ value: TaskPriorityLevel.NONE });
   static readonly LOW = new TaskPriority({ value: TaskPriorityLevel.LOW });
   static readonly MEDIUM = new TaskPriority({ value: TaskPriorityLevel.MEDIUM });
   static readonly HIGH = new TaskPriority({ value: TaskPriorityLevel.HIGH });
@@ -28,7 +30,7 @@ export class TaskPriority extends BaseValueObject<TaskPriorityProps> {
   static from(value: string): TaskPriority {
     const level = Object.values(TaskPriorityLevel).find((l) => l === value);
     if (!level) {
-      throw new Error(`Invalid task priority: ${value}`);
+      throw new Error(`Invalid Task priority: ${value}`);
     }
     return new TaskPriority({ value: level });
   }

@@ -1,0 +1,30 @@
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  IProjectRepository,
+  PROJECT_REPOSITORY,
+} from '@modules/project/domain/contracts/project.repository';
+import { ProjectNotFoundError } from '@modules/project/domain/errors/project.errors';
+import { ITaskRepository, TASK_REPOSITORY } from '../../domain/contracts/task.repository';
+import { TaskNotFoundError } from '../../domain/errors/task.errors';
+import { Task } from '../../domain/models/task.model';
+import { TaskAccessService } from '../../infrastructure/services/task-access.service';
+
+@Injectable()
+export class GetTaskHandler {
+  constructor(
+    @Inject(TASK_REPOSITORY)
+    private readonly taskRepository: ITaskRepository,
+    @Inject(PROJECT_REPOSITORY)
+    private readonly projectRepository: IProjectRepository,
+    private readonly taskAccess: TaskAccessService,
+  ) {}
+
+  async execute(actorUserId: string, taskId: string): Promise<Task> {
+    const task = await this.taskRepository.findById(taskId);
+    if (!task) throw new TaskNotFoundError(taskId);
+    const project = await this.projectRepository.findById(task.projectId);
+    if (!project) throw new ProjectNotFoundError(task.projectId);
+    await this.taskAccess.ensureCanViewTask(actorUserId, project);
+    return task;
+  }
+}

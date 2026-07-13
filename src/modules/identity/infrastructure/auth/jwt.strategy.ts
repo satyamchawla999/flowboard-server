@@ -5,10 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import type { AccessTokenPayload } from './token.service';
 import type { AuthenticatedUser } from '@common/decorators/current-user.decorator';
 import { UnauthorizedError } from '@common/errors';
-import {
-  ISessionRepository,
-  SESSION_REPOSITORY,
-} from '../../domain/contracts/session.repository';
+import { ISessionRepository, SESSION_REPOSITORY } from '../../domain/contracts/session.repository';
 import { IUserRepository, USER_REPOSITORY } from '../../domain/contracts/user.repository';
 
 @Injectable()

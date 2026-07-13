@@ -1,4 +1,4 @@
-import { ProjectHealthStatus } from '../../domain/value-objects/project-health-status.vo';
+import type { ProjectHealthStatus } from '../../domain/value-objects/project-health-status.vo';
 
 export interface UpdateProjectHealthDto {
   projectId: string;

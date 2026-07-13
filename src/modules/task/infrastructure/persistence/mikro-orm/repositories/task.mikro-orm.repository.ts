@@ -1,18 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager } from '@mikro-orm/core';
-import type { ITaskRepository } from '../../../../domain/contracts/task.repository';
+import { EntityManager, type FilterQuery } from '@mikro-orm/core';
+import {
+  ITaskRepository,
+  ListAssignedTasksFilters,
+  ListProjectTasksFilters,
+} from '../../../../domain/contracts/task.repository';
 import { Task } from '../../../../domain/models/task.model';
 import { TaskEntity } from '../entities/task.entity';
 import { TaskMapper } from '../mappers/task.mapper';
 
-/**
- * Concrete repository implementation — lives entirely in infrastructure.
- *
- * Why EntityManager over MikroORM's built-in EntityRepository: EM gives us
- * explicit control over the unit of work. Application services manage when
- * to flush (commit the transaction), so repositories don't auto-flush.
- * This keeps transaction boundaries in the application layer where they belong.
- */
 @Injectable()
 export class TaskMikroOrmRepository implements ITaskRepository {
   constructor(
@@ -21,44 +17,84 @@ export class TaskMikroOrmRepository implements ITaskRepository {
   ) {}
 
   async findById(id: string): Promise<Task | null> {
+    const entity = await this.em.findOne(TaskEntity, { id, deletedAt: null });
+    return entity ? this.mapper.toDomain(entity) : null;
+  }
+
+  async findByIdIncludingDeleted(id: string): Promise<Task | null> {
     const entity = await this.em.findOne(TaskEntity, { id });
     return entity ? this.mapper.toDomain(entity) : null;
   }
 
-  async findAll(): Promise<Task[]> {
-    const entities = await this.em.findAll(TaskEntity);
-    return entities.map((e) => this.mapper.toDomain(e));
+  async listByProject(projectId: string, filters: ListProjectTasksFilters = {}): Promise<Task[]> {
+    const where: FilterQuery<TaskEntity> = { projectId, deletedAt: null };
+    if (filters.sectionId) where.sectionId = filters.sectionId;
+    if (filters.assigneeUserId) where.assigneeUserId = filters.assigneeUserId;
+    if (filters.lifecycleStatus) where.lifecycleStatus = filters.lifecycleStatus;
+    if (filters.priority) where.priority = filters.priority;
+    if (filters.dueDateFrom || filters.dueDateTo) {
+      where.dueDate = {};
+      if (filters.dueDateFrom) where.dueDate.$gte = filters.dueDateFrom;
+      if (filters.dueDateTo) where.dueDate.$lte = filters.dueDateTo;
+    }
+
+    const entities = await this.em.find(TaskEntity, where, {
+      orderBy: { sectionId: 'ASC', position: 'ASC', createdAt: 'ASC' },
+    });
+    return entities.map((entity) => this.mapper.toDomain(entity));
   }
 
-  async findByProjectId(projectId: string): Promise<Task[]> {
-    const entities = await this.em.find(TaskEntity, { projectId });
-    return entities.map((e) => this.mapper.toDomain(e));
+  async listByAssignee(userId: string, filters: ListAssignedTasksFilters = {}): Promise<Task[]> {
+    const where: FilterQuery<TaskEntity> = { assigneeUserId: userId, deletedAt: null };
+    if (filters.workspaceId) where.workspaceId = filters.workspaceId;
+    if (filters.lifecycleStatus) where.lifecycleStatus = filters.lifecycleStatus;
+    const entities = await this.em.find(TaskEntity, where, {
+      orderBy: { dueDate: 'ASC_NULLS_LAST', updatedAt: 'DESC' },
+    });
+    return entities.map((entity) => this.mapper.toDomain(entity));
   }
 
-  async findByAssigneeId(assigneeId: string): Promise<Task[]> {
-    const entities = await this.em.find(TaskEntity, { assigneeId });
-    return entities.map((e) => this.mapper.toDomain(e));
+  async listBySection(projectId: string, sectionId: string): Promise<Task[]> {
+    const entities = await this.em.find(
+      TaskEntity,
+      { projectId, sectionId, deletedAt: null },
+      { orderBy: { position: 'ASC', createdAt: 'ASC' } },
+    );
+    return entities.map((entity) => this.mapper.toDomain(entity));
+  }
+
+  async findLastBySection(projectId: string, sectionId: string): Promise<Task | null> {
+    const entity = await this.em.findOne(
+      TaskEntity,
+      { projectId, sectionId, deletedAt: null },
+      { orderBy: { position: 'DESC' } },
+    );
+    return entity ? this.mapper.toDomain(entity) : null;
+  }
+
+  async countActiveBySection(sectionId: string): Promise<number> {
+    return this.em.count(TaskEntity, { sectionId, deletedAt: null });
   }
 
   async save(task: Task): Promise<void> {
     const existing = await this.em.findOne(TaskEntity, { id: task.id });
-
     if (existing) {
-      const updated = this.mapper.toPersistence(task);
-      this.em.assign(existing, updated);
+      this.em.assign(existing, this.mapper.toPersistence(task));
     } else {
-      const entity = this.mapper.toPersistence(task);
-      this.em.persist(entity);
+      this.em.persist(this.mapper.toPersistence(task));
     }
-
     await this.em.flush();
   }
 
-  async delete(id: string): Promise<void> {
-    const entity = await this.em.findOne(TaskEntity, { id });
-    if (entity) {
-      this.em.remove(entity);
-      await this.em.flush();
+  async saveMany(tasks: Task[]): Promise<void> {
+    for (const task of tasks) {
+      const existing = await this.em.findOne(TaskEntity, { id: task.id });
+      if (existing) {
+        this.em.assign(existing, this.mapper.toPersistence(task));
+      } else {
+        this.em.persist(this.mapper.toPersistence(task));
+      }
     }
+    await this.em.flush();
   }
 }
