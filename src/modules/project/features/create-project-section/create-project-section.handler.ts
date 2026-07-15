@@ -79,7 +79,7 @@ export class CreateProjectSectionHandler {
     });
 
     await this.sectionRepository.save(section);
-    this.eventDispatcher.dispatchAggregateEvents(section);
+    await this.eventDispatcher.dispatchAggregateEvents(section);
     return section;
   }
 

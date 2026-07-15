@@ -34,7 +34,7 @@ export class SignupHandler {
     });
 
     await this.userRepository.save(user);
-    this.eventDispatcher.dispatchAggregateEvents(user);
+    await this.eventDispatcher.dispatchAggregateEvents(user);
 
     return this.tokenIssuer.issueTokenPairForSession(user, {
       userAgent: null,

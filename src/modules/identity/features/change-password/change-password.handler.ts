@@ -31,7 +31,7 @@ export class ChangePasswordHandler {
     user.updatePasswordHash(newHash);
 
     await this.userRepository.save(user);
-    this.eventDispatcher.dispatchAggregateEvents(user);
+    await this.eventDispatcher.dispatchAggregateEvents(user);
 
     await this.sessionRepository.revokeAllByUserId(userId);
   }

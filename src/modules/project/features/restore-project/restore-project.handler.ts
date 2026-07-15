@@ -23,7 +23,7 @@ export class RestoreProjectHandler {
 
     project.restore(actorUserId);
     await this.projectRepository.save(project);
-    this.eventDispatcher.dispatchAggregateEvents(project);
+    await this.eventDispatcher.dispatchAggregateEvents(project);
     return project;
   }
 }

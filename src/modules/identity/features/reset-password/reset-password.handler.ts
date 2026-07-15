@@ -33,7 +33,7 @@ export class ResetPasswordHandler {
     user.clearPasswordResetToken();
 
     await this.userRepository.save(user);
-    this.eventDispatcher.dispatchAggregateEvents(user);
+    await this.eventDispatcher.dispatchAggregateEvents(user);
 
     await this.sessionRepository.revokeAllByUserId(user.id);
   }

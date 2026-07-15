@@ -22,6 +22,6 @@ export class DeleteProjectHandler {
 
     project.softDelete(actorUserId);
     await this.projectRepository.save(project);
-    this.eventDispatcher.dispatchAggregateEvents(project);
+    await this.eventDispatcher.dispatchAggregateEvents(project);
   }
 }

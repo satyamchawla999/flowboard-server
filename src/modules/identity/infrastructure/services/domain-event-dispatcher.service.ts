@@ -1,15 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2 } from 'eventemitter2';
+import { DomainEventOutboxService } from '@infrastructure/message-bus/outbox/services/domain-event-outbox.service';
 
 @Injectable()
 export class DomainEventDispatcherService {
-  constructor(private readonly eventEmitter: EventEmitter2) {}
+  constructor(private readonly outbox: DomainEventOutboxService) {}
 
-  dispatchAggregateEvents(aggregate: { pullDomainEvents: () => object[] }): void {
-    const events = aggregate.pullDomainEvents();
-    for (const event of events) {
-      const eventName = (event.constructor as { EVENT_NAME?: string }).EVENT_NAME;
-      if (eventName) this.eventEmitter.emit(eventName, event);
-    }
+  async dispatchAggregateEvents(aggregate: { pullDomainEvents: () => object[] }): Promise<void> {
+    await this.outbox.store(aggregate.pullDomainEvents());
   }
 }

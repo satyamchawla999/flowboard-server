@@ -35,7 +35,7 @@ export class ChangeTaskPriorityHandler {
     project.pullDomainEvents();
     task.changePriority(TaskPriority.from(dto.priority), actorUserId);
     await this.taskRepository.save(task);
-    this.eventDispatcher.dispatchAggregateEvents(task);
+    await this.eventDispatcher.dispatchAggregateEvents(task);
     return task;
   }
 }

@@ -50,7 +50,7 @@ export class CreateWorkspaceHandler {
     });
 
     await this.workspaceRepository.save(workspace);
-    this.eventDispatcher.dispatchAggregateEvents(workspace);
+    await this.eventDispatcher.dispatchAggregateEvents(workspace);
 
     return workspace;
   }

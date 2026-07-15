@@ -12,6 +12,7 @@ import type { Request } from 'express';
 import { appConfig, databaseConfig, jwtConfig, mailConfig } from './infrastructure/config';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { MikroOrmTransactionalAdapter } from './infrastructure/database/mikro-orm-transactional.adapter';
+import { OutboxModule } from './infrastructure/message-bus/outbox/outbox.module';
 import { DateTimeScalar } from './common/scalars/date.scalar';
 import { JsonScalar } from './common/scalars/json.scalar';
 import { JwtAuthGuard } from './modules/identity/infrastructure/auth/jwt-auth.guard';
@@ -71,6 +72,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
     }),
 
     DatabaseModule,
+    OutboxModule,
 
     // Domain modules
     IdentityModule,

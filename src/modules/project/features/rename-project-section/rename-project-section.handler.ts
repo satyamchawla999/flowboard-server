@@ -34,7 +34,7 @@ export class RenameProjectSectionHandler {
 
     section.rename(dto.name, actorUserId);
     await this.sectionRepository.save(section);
-    this.eventDispatcher.dispatchAggregateEvents(section);
+    await this.eventDispatcher.dispatchAggregateEvents(section);
     return section;
   }
 }

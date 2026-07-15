@@ -23,7 +23,7 @@ export class UpdateProfileHandler {
     if (dto.timezone !== undefined) user.updateTimezone(dto.timezone);
 
     await this.userRepository.save(user);
-    this.eventDispatcher.dispatchAggregateEvents(user);
+    await this.eventDispatcher.dispatchAggregateEvents(user);
 
     return user;
   }

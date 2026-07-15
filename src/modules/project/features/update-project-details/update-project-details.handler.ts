@@ -24,7 +24,7 @@ export class UpdateProjectDetailsHandler {
 
     project.updateDetails({ name: dto.name, description: dto.description }, actorUserId);
     await this.projectRepository.save(project);
-    this.eventDispatcher.dispatchAggregateEvents(project);
+    await this.eventDispatcher.dispatchAggregateEvents(project);
     return project;
   }
 }

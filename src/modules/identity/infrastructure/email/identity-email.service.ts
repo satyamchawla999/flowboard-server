@@ -75,6 +75,7 @@ export class IdentityEmailService {
     const html = await this.renderTemplate(params.template, params.context);
     const text = this.createTextFallback(params.context.actionUrl);
 
+    console.log(this.transporter, 'transporter');
     if (!this.transporter) {
       this.logger.warn(
         `Mail is disabled or not configured. Skipping "${params.subject}" email to ${params.to}. Link: ${params.context.actionUrl}`,
@@ -82,6 +83,7 @@ export class IdentityEmailService {
       return;
     }
 
+    console.log(`Sending "${params.subject}" email to ${params.to}. Link: ${params.context.actionUrl}`);
     await this.transporter.sendMail({
       to: params.to,
       from: this.getFromAddress(),

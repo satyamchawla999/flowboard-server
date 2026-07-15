@@ -41,7 +41,7 @@ export class ReorderTaskHandler {
     const position = await this.calculatePosition(task, dto.beforeTaskId, dto.afterTaskId);
     task.reorder(position, actorUserId);
     await this.taskRepository.save(task);
-    this.eventDispatcher.dispatchAggregateEvents(task);
+    await this.eventDispatcher.dispatchAggregateEvents(task);
     return task;
   }
 

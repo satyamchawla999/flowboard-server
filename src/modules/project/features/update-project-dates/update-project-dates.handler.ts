@@ -24,7 +24,7 @@ export class UpdateProjectDatesHandler {
 
     project.updateDates(dto.startDate ?? null, dto.dueDate ?? null, actorUserId);
     await this.projectRepository.save(project);
-    this.eventDispatcher.dispatchAggregateEvents(project);
+    await this.eventDispatcher.dispatchAggregateEvents(project);
     return project;
   }
 }

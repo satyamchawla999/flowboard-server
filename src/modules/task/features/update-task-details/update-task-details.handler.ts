@@ -34,7 +34,7 @@ export class UpdateTaskDetailsHandler {
     project.pullDomainEvents();
     task.updateDetails({ title: dto.title, description: dto.description }, actorUserId);
     await this.taskRepository.save(task);
-    this.eventDispatcher.dispatchAggregateEvents(task);
+    await this.eventDispatcher.dispatchAggregateEvents(task);
     return task;
   }
 }

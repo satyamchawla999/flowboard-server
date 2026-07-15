@@ -79,7 +79,7 @@ export class ReorderProjectSectionHandler {
 
     section.moveTo(position, actorUserId);
     await this.sectionRepository.save(section);
-    this.eventDispatcher.dispatchAggregateEvents(section);
+    await this.eventDispatcher.dispatchAggregateEvents(section);
     return section;
   }
 }

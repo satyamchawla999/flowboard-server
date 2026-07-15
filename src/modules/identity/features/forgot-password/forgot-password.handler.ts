@@ -22,6 +22,7 @@ export class ForgotPasswordHandler {
     const normalizedEmail = dto.email.toLowerCase().trim();
     const user = await this.userRepository.findByEmail(normalizedEmail);
 
+    console.log('ForgotPasswordHandler: user found', user);
     if (!user || !user.isActive()) return;
 
     const rawToken = this.tokenService.generateOpaqueToken();

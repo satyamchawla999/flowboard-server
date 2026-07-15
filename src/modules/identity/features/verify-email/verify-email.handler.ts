@@ -27,6 +27,6 @@ export class VerifyEmailHandler {
     user.activate();
 
     await this.userRepository.save(user);
-    this.eventDispatcher.dispatchAggregateEvents(user);
+    await this.eventDispatcher.dispatchAggregateEvents(user);
   }
 }

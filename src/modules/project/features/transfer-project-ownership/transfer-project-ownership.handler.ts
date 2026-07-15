@@ -65,7 +65,7 @@ export class TransferProjectOwnershipHandler {
     await this.projectRepository.save(project);
     await this.projectMemberRepository.save(previousOwner);
     await this.projectMemberRepository.save(target);
-    this.eventDispatcher.dispatchAggregateEvents(project);
+    await this.eventDispatcher.dispatchAggregateEvents(project);
 
     return project;
   }

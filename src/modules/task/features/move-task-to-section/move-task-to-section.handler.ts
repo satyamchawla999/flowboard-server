@@ -59,7 +59,7 @@ export class MoveTaskToSectionHandler {
     );
     task.moveToSection(section.id, position, actorUserId);
     await this.taskRepository.save(task);
-    this.eventDispatcher.dispatchAggregateEvents(task);
+    await this.eventDispatcher.dispatchAggregateEvents(task);
     return task;
   }
 

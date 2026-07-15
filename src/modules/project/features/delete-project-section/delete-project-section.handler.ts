@@ -45,6 +45,6 @@ export class DeleteProjectSectionHandler {
 
     section.softDelete(actorUserId);
     await this.sectionRepository.save(section);
-    this.eventDispatcher.dispatchAggregateEvents(section);
+    await this.eventDispatcher.dispatchAggregateEvents(section);
   }
 }

@@ -24,7 +24,7 @@ export class UpdateProjectHealthHandler {
 
     project.updateHealth(dto.healthStatus, dto.statusMessage, actorUserId);
     await this.projectRepository.save(project);
-    this.eventDispatcher.dispatchAggregateEvents(project);
+    await this.eventDispatcher.dispatchAggregateEvents(project);
     return project;
   }
 }

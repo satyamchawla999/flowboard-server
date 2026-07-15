@@ -72,8 +72,8 @@ export class CreateProjectHandler {
     await this.projectRepository.save(project);
     await this.projectMemberRepository.save(ownerMember);
     await this.projectSectionRepository.save(defaultSection);
-    this.eventDispatcher.dispatchAggregateEvents(project);
-    this.eventDispatcher.dispatchAggregateEvents(defaultSection);
+    await this.eventDispatcher.dispatchAggregateEvents(project);
+    await this.eventDispatcher.dispatchAggregateEvents(defaultSection);
 
     return project;
   }
