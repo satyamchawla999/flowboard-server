@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
-import { EventEmitter2 } from 'eventemitter2';
+import { DomainEventOutboxService } from '@infrastructure/message-bus/outbox/services/domain-event-outbox.service';
 import { IUserRepository, USER_REPOSITORY } from '../../domain/contracts/user.repository';
 import { UserLoggedInEvent } from '../../domain/events/user-logged-in.event';
 import { AuthTokenIssuerService } from '../../infrastructure/services/auth-token-issuer.service';
@@ -19,7 +19,7 @@ export class LoginHandler {
     private readonly userRepository: IUserRepository,
     private readonly passwordHasher: PasswordHasherService,
     private readonly tokenIssuer: AuthTokenIssuerService,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly outbox: DomainEventOutboxService,
   ) {}
 
   @Transactional()
@@ -39,7 +39,7 @@ export class LoginHandler {
     });
 
     const loginEvent = new UserLoggedInEvent(user.id, result.session.id, dto.ipAddress);
-    this.eventEmitter.emit(UserLoggedInEvent.EVENT_NAME, loginEvent);
+    await this.outbox.store([loginEvent]);
 
     return result;
   }

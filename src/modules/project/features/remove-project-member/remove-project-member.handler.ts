@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { EventEmitter2 } from 'eventemitter2';
 import { Transactional } from '@nestjs-cls/transactional';
+import { DomainEventOutboxService } from '@infrastructure/message-bus/outbox/services/domain-event-outbox.service';
 import {
   IProjectMemberRepository,
   PROJECT_MEMBER_REPOSITORY,
@@ -24,7 +24,7 @@ export class RemoveProjectMemberHandler {
     @Inject(PROJECT_MEMBER_REPOSITORY)
     private readonly projectMemberRepository: IProjectMemberRepository,
     private readonly projectAccess: ProjectAccessService,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly outbox: DomainEventOutboxService,
   ) {}
 
   @Transactional()
@@ -40,8 +40,7 @@ export class RemoveProjectMemberHandler {
     }
 
     await this.projectMemberRepository.delete(member.id);
-    this.eventEmitter.emit(
-      ProjectMemberRemovedEvent.EVENT_NAME,
+    await this.outbox.store([
       new ProjectMemberRemovedEvent(
         member.projectId,
         member.workspaceId,
@@ -49,6 +48,6 @@ export class RemoveProjectMemberHandler {
         member.role,
         actorUserId,
       ),
-    );
+    ]);
   }
 }

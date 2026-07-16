@@ -116,7 +116,13 @@ export class ProjectActivityProjectionListener {
   }
 
   private async appendProject(
-    event: { projectId: string; workspaceId: string },
+    event: {
+      projectId: string;
+      workspaceId: string;
+      eventId?: string;
+      eventName?: string;
+      occurredAt?: Date | string;
+    },
     type: ActivityType,
     actorUserId: string | null,
     metadata: Record<string, unknown> = {},
@@ -130,6 +136,8 @@ export class ProjectActivityProjectionListener {
       subjectType: ActivitySubjectType.PROJECT,
       subjectId: event.projectId,
       metadata,
+      eventId: event.eventId,
+      occurredAt: this.occurredAt(event),
     });
   }
 
@@ -138,6 +146,19 @@ export class ProjectActivityProjectionListener {
   }
 
   private eventName(event: object, fallback: ActivityType): string {
-    return (event.constructor as unknown as { EVENT_NAME?: string }).EVENT_NAME ?? fallback;
+    return (
+      (event as { eventName?: string }).eventName ??
+      (event.constructor as unknown as { EVENT_NAME?: string }).EVENT_NAME ??
+      fallback
+    );
+  }
+
+  private occurredAt(event: { occurredAt?: Date | string }): Date | undefined {
+    if (event.occurredAt instanceof Date) return event.occurredAt;
+    if (typeof event.occurredAt === 'string') {
+      const date = new Date(event.occurredAt);
+      if (!Number.isNaN(date.getTime())) return date;
+    }
+    return undefined;
   }
 }

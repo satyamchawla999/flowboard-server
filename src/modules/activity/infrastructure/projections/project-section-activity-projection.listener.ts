@@ -72,6 +72,9 @@ export class ProjectSectionActivityProjectionListener {
       projectId: string;
       workspaceId: string;
       actorUserId: string;
+      eventId?: string;
+      eventName?: string;
+      occurredAt?: Date | string;
     },
     type: ActivityType,
     metadata: Record<string, unknown>,
@@ -86,10 +89,25 @@ export class ProjectSectionActivityProjectionListener {
       subjectType: ActivitySubjectType.PROJECT_SECTION,
       subjectId: event.sectionId,
       metadata,
+      eventId: event.eventId,
+      occurredAt: this.occurredAt(event),
     });
   }
 
   private eventName(event: object, fallback: ActivityType): string {
-    return (event.constructor as unknown as { EVENT_NAME?: string }).EVENT_NAME ?? fallback;
+    return (
+      (event as { eventName?: string }).eventName ??
+      (event.constructor as unknown as { EVENT_NAME?: string }).EVENT_NAME ??
+      fallback
+    );
+  }
+
+  private occurredAt(event: { occurredAt?: Date | string }): Date | undefined {
+    if (event.occurredAt instanceof Date) return event.occurredAt;
+    if (typeof event.occurredAt === 'string') {
+      const date = new Date(event.occurredAt);
+      if (!Number.isNaN(date.getTime())) return date;
+    }
+    return undefined;
   }
 }

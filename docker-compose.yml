@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -10,15 +8,11 @@ services:
       POSTGRES_USER: ${DB_USER:-flowboard}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-flowboard_secret}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - '${DB_PORT:-5432}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U ${DB_USER:-flowboard} -d ${DB_NAME:-flowboard_dev}",
-        ]
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-flowboard} -d ${DB_NAME:-flowboard_dev}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,16 +21,31 @@ services:
     image: dpage/pgadmin4:latest
     container_name: flowboard_pgadmin
     restart: unless-stopped
-    depends_on: 
+    depends_on:
       postgres:
         condition: service_healthy
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@flowboard.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin123}
     ports:
-      - "8888:80"
+      - '8888:80'
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    container_name: flowboard_rabbitmq
+    restart: unless-stopped
+    ports:
+      - '${RABBITMQ_FORWARD_PORT:-5672}:5672'
+      - '${RABBITMQ_MANAGEMENT_FORWARD_PORT:-15672}:15672'
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   app:
     build:
@@ -48,8 +57,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     ports:
-      - "${PORT:-4000}:4000"
+      - '${PORT:-4000}:4000'
     environment:
       NODE_ENV: development
       DB_HOST: postgres
@@ -64,3 +75,4 @@ services:
 volumes:
   postgres_data:
   pgadmin_data:
+  rabbitmq_data:

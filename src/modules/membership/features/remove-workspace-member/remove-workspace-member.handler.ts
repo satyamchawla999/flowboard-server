@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { EventEmitter2 } from 'eventemitter2';
 import { Transactional } from '@nestjs-cls/transactional';
+import { DomainEventOutboxService } from '@infrastructure/message-bus/outbox/services/domain-event-outbox.service';
 import {
   IWorkspaceMemberRepository,
   WORKSPACE_MEMBER_REPOSITORY,
@@ -20,7 +20,7 @@ export class RemoveWorkspaceMemberHandler {
     @Inject(WORKSPACE_MEMBER_REPOSITORY)
     private readonly memberRepository: IWorkspaceMemberRepository,
     private readonly membershipPolicy: MembershipPolicyService,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly outbox: DomainEventOutboxService,
   ) {}
 
   @Transactional()
@@ -45,8 +45,7 @@ export class RemoveWorkspaceMemberHandler {
     }
 
     await this.memberRepository.delete(target.id);
-    this.eventEmitter.emit(
-      MemberRemovedEvent.EVENT_NAME,
+    await this.outbox.store([
       new MemberRemovedEvent(
         target.workspaceId,
         target.id,
@@ -54,6 +53,6 @@ export class RemoveWorkspaceMemberHandler {
         target.role,
         actorUserId,
       ),
-    );
+    ]);
   }
 }

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { EventEmitter2 } from 'eventemitter2';
 import { Transactional } from '@nestjs-cls/transactional';
+import { DomainEventOutboxService } from '@infrastructure/message-bus/outbox/services/domain-event-outbox.service';
 import {
   IWorkspaceMemberRepository,
   WORKSPACE_MEMBER_REPOSITORY,
@@ -18,7 +18,7 @@ export class TransferWorkspaceOwnershipHandler {
     @Inject(WORKSPACE_MEMBER_REPOSITORY)
     private readonly memberRepository: IWorkspaceMemberRepository,
     private readonly membershipPolicy: MembershipPolicyService,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly outbox: DomainEventOutboxService,
   ) {}
 
   @Transactional()
@@ -37,10 +37,9 @@ export class TransferWorkspaceOwnershipHandler {
 
     await this.memberRepository.save(target);
     await this.memberRepository.save(actor);
-    this.eventEmitter.emit(
-      OwnershipTransferredEvent.EVENT_NAME,
+    await this.outbox.store([
       new OwnershipTransferredEvent(dto.workspaceId, actorUserId, target.userId),
-    );
+    ]);
 
     return target;
   }

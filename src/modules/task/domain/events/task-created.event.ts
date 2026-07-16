@@ -2,9 +2,9 @@
  * Domain events are plain objects — no decorators, no framework dependencies.
  *
  * Why: Domain events express that something meaningful happened in the domain.
- * They decouple the publisher (task being created) from the subscribers
- * (activity log, notification, search index). This is EventEmitter2-based,
- * not CQRS — intentionally simple for a modular monolith at this scale.
+ * They decouple the publisher (task being created) from subscribers
+ * (activity log, notification, search index). Application handlers store
+ * events in the outbox; the local relay later emits them inside the monolith.
  */
 export class TaskCreatedEvent {
   static readonly EVENT_NAME = 'task.created';

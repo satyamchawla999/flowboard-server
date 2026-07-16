@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { randomBytes } from 'crypto';
-import { EventEmitter2 } from 'eventemitter2';
 import { Transactional } from '@nestjs-cls/transactional';
+import { DomainEventOutboxService } from '@infrastructure/message-bus/outbox/services/domain-event-outbox.service';
 import {
   IWorkspaceMemberRepository,
   WORKSPACE_MEMBER_REPOSITORY,
@@ -37,7 +37,7 @@ export class InviteWorkspaceMemberHandler {
     @Inject(MEMBERSHIP_USER_PROFILE_REPOSITORY)
     private readonly userProfileRepository: IMembershipUserProfileRepository,
     private readonly membershipPolicy: MembershipPolicyService,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly outbox: DomainEventOutboxService,
   ) {}
 
   @Transactional()
@@ -76,8 +76,7 @@ export class InviteWorkspaceMemberHandler {
 
     await this.invitationRepository.save(invitation);
     this.logger.log(`Mock invite email to ${email}: token=${invitation.token}`);
-    this.eventEmitter.emit(
-      MemberInvitedEvent.EVENT_NAME,
+    await this.outbox.store([
       new MemberInvitedEvent(
         invitation.workspaceId,
         invitation.id,
@@ -85,7 +84,7 @@ export class InviteWorkspaceMemberHandler {
         invitation.role,
         invitation.invitedByUserId,
       ),
-    );
+    ]);
 
     return invitation;
   }
